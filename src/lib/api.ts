@@ -8,7 +8,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    const authStorage = localStorage.getItem("trackr-auth");
+    const authStorage = localStorage.getItem("argos-auth");
     if (authStorage) {
         const { state } = JSON.parse(authStorage);
         if (state.accessToken) {

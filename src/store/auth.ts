@@ -1,9 +1,8 @@
 "use client";
 
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-
 import Cookies from "js-cookie";
+import api from "@/lib/api";
+import { AxiosError } from "axios";
 
 import { User, Membership } from "@/types";
 
@@ -33,7 +32,7 @@ export const useAuthStore = create<AuthState>()(
             accessToken: null,
             refreshToken: null,
             setAuth: (data) => {
-                Cookies.set('trackr-token', data.access, { expires: 1, secure: true, sameSite: 'strict' });
+                Cookies.set('argos-token', data.access, { expires: 1, secure: true, sameSite: 'strict' });
                 set({
                     user: data.user,
                     memberships: data.memberships,
@@ -43,7 +42,7 @@ export const useAuthStore = create<AuthState>()(
                 });
             },
             logout: () => {
-                Cookies.remove('trackr-token');
+                Cookies.remove('argos-token');
                 set({
                     user: null,
                     memberships: [],
@@ -54,33 +53,25 @@ export const useAuthStore = create<AuthState>()(
             },
             switchOrganization: async (orgId) => {
                 try {
-                    const { accessToken } = useAuthStore.getState();
-                    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users/switch-organization/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${accessToken}`
-                        },
-                        body: JSON.stringify({ organization_id: orgId })
-                    });
+                    const response = await api.post('/auth/switch-organization/', { organization_id: orgId });
+                    const { access, refresh } = response.data;
 
-                    if (!response.ok) throw new Error('Switch failed');
-
-                    const data = await response.json();
-                    Cookies.set('trackr-token', data.access, { expires: 1, secure: true, sameSite: 'strict' });
+                    Cookies.set('argos-token', access, { expires: 1, secure: true, sameSite: 'strict' });
                     set({
                         activeOrganizationId: orgId,
-                        accessToken: data.access,
-                        refreshToken: data.refresh,
+                        accessToken: access,
+                        refreshToken: refresh,
                     });
                     window.location.reload(); // Refresh to clear all state and re-fetch for new org
                 } catch (error) {
-                    console.error("Failed to switch organization", error);
+                    const axiosError = error as AxiosError<{ detail: string }>;
+                    console.error("Failed to switch organization", axiosError.response?.data?.detail || axiosError.message);
+                    throw axiosError;
                 }
             },
         }),
         {
-            name: "trackr-auth",
+            name: "argos-auth",
         }
     )
 );

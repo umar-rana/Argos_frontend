@@ -51,7 +51,7 @@ export default function LoginPage() {
                     <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-white">
                         <Target size={32} />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight text-text-primary">Welcome to Trackr</h1>
+                    <h1 className="text-2xl font-bold tracking-tight text-text-primary">Welcome to Argos</h1>
                     <p className="text-text-secondary text-sm">Professional OKR Management Platform</p>
                 </div>
 

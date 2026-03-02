@@ -14,11 +14,11 @@ export function Header() {
     return (
         <header className="h-14 bg-primary text-white flex items-center justify-between px-4 z-50 shrink-0">
             <div className="flex items-center gap-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-white font-black text-xl italic shadow-inner">
-                        T
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                        <span className="text-primary font-black text-xl italic pt-0.5 pr-0.5">A</span>
                     </div>
-                    <span className="font-bold text-xl tracking-tight hidden sm:block">Trackr</span>
+                    <span className="text-xl font-black tracking-tighter uppercase italic">Argos</span>
                 </div>
 
                 <div className="h-6 w-px bg-white/20" />

@@ -1,5 +1,5 @@
-import { create } from "zustand";
 import api from "@/lib/api";
+import { AxiosError } from "axios";
 import { useAuthStore } from "./auth";
 import { Notification } from "@/types";
 
@@ -18,29 +18,30 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     isLoading: false,
 
     fetchNotifications: async () => {
-        const activeOrgId = useAuthStore.getState().activeOrgId;
-        if (!activeOrgId) return;
+        const activeOrganizationId = useAuthStore.getState().activeOrganizationId;
+        if (!activeOrganizationId) return;
 
         set({ isLoading: true });
         try {
-            const { data } = await api.get(`/orgs/${activeOrgId}/notifications/`);
+            const { data } = await api.get(`/orgs/${activeOrganizationId}/notifications/`);
             set({
                 notifications: data,
                 unreadCount: data.filter((n: Notification) => !n.is_read).length,
                 isLoading: false
             });
         } catch (err) {
-            console.error("Failed to fetch notifications", err);
+            const axiosError = err as AxiosError<{ detail: string }>;
+            console.error("Failed to fetch notifications", axiosError.response?.data?.detail || axiosError.message);
             set({ isLoading: false });
         }
     },
 
     markAsRead: async (id) => {
-        const activeOrgId = useAuthStore.getState().activeOrgId;
-        if (!activeOrgId) return;
+        const activeOrganizationId = useAuthStore.getState().activeOrganizationId;
+        if (!activeOrganizationId) return;
 
         try {
-            await api.post(`/orgs/${activeOrgId}/notifications/${id}/mark_read/`);
+            await api.post(`/orgs/${activeOrganizationId}/notifications/${id}/mark_read/`);
             const updated = get().notifications.map(n =>
                 n.id === id ? { ...n, is_read: true } : n
             );
@@ -49,7 +50,8 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
                 unreadCount: updated.filter(n => !n.is_read).length
             });
         } catch (err) {
-            console.error("Failed to mark notification as read", err);
+            const axiosError = err as AxiosError<{ detail: string }>;
+            console.error("Failed to mark notification as read", axiosError.response?.data?.detail || axiosError.message);
         }
     },
 
@@ -58,14 +60,15 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         if (!activeOrgId) return;
 
         try {
-            await api.post(`/orgs/${activeOrgId}/notifications/mark_all_read/`);
+            await api.post(`/orgs/${activeOrganizationId}/notifications/mark_all_read/`);
             const updated = get().notifications.map(n => ({ ...n, is_read: true }));
             set({
                 notifications: updated,
                 unreadCount: 0
             });
         } catch (err) {
-            console.error("Failed to mark all notifications as read", err);
+            const axiosError = err as AxiosError<{ detail: string }>;
+            console.error("Failed to mark all notifications as read", axiosError.response?.data?.detail || axiosError.message);
         }
     }
 }));

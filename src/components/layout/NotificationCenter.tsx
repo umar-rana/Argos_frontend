@@ -12,9 +12,21 @@ export function NotificationCenter() {
 
     useEffect(() => {
         fetchNotifications();
-        // Poll every 1 minute
-        const interval = setInterval(fetchNotifications, 60000);
-        return () => clearInterval(interval);
+
+        const handleFocus = () => fetchNotifications();
+        window.addEventListener('focus', handleFocus);
+
+        // Poll every 1 minute but only when tab is active
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                fetchNotifications();
+            }
+        }, 60000);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('focus', handleFocus);
+        };
     }, [fetchNotifications]);
 
     const getIcon = (type: string) => {

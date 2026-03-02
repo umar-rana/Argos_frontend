@@ -10,8 +10,8 @@ import { AuthProvider } from "@/components/auth/AuthProvider";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "Trackr | OKR Management",
-  description: "Professional OKR tracking for consultants and organizations.",
+  title: "Argos | Strategic OKR Management",
+  description: "High-density strategic OKR tracking platform for modern organizations.",
 };
 
 export default function RootLayout({

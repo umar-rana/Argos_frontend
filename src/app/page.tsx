@@ -10,7 +10,8 @@ export default function Home() {
 
   const handleExport = () => {
     if (!activeOrganizationId) return;
-    window.location.href = `http://localhost:8000/api/v1/orgs/${activeOrganizationId}/export/`;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+    window.location.href = `${apiUrl}/orgs/${activeOrganizationId}/export/`;
   };
 
   return (

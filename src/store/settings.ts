@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { api } from '@/lib/api';
+import api from '@/lib/api';
+import { AxiosError } from "axios";
 import { useAuthStore } from './auth';
 
 export interface EmailSettings {
@@ -32,10 +33,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
         set({ isLoading: true, error: null });
         try {
-            const response = await api.get(`/api/v1/orgs/${orgId}/email-settings/`);
+            const response = await api.get(`/orgs/${orgId}/email-settings/`);
             set({ emailSettings: response.data, isLoading: false });
-        } catch (err: any) {
-            set({ error: err.response?.data?.detail || 'Failed to fetch email settings', isLoading: false });
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>;
+            set({ error: axiosError.response?.data?.detail || 'Failed to fetch email settings', isLoading: false });
         }
     },
 
@@ -45,11 +47,12 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
         set({ isLoading: true, error: null });
         try {
-            const response = await api.patch(`/api/v1/orgs/${orgId}/email-settings/`, data);
+            const response = await api.patch(`/orgs/${orgId}/email-settings/`, data);
             set({ emailSettings: response.data, isLoading: false });
-        } catch (err: any) {
-            set({ error: err.response?.data?.detail || 'Failed to update email settings', isLoading: false });
-            throw err;
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>;
+            set({ error: axiosError.response?.data?.detail || 'Failed to update email settings', isLoading: false });
+            throw axiosError;
         }
     },
 
@@ -58,10 +61,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
         if (!orgId) return { success: false, message: 'No organization selected' };
 
         try {
-            const response = await api.post(`/api/v1/orgs/${orgId}/email-settings/test/`);
+            const response = await api.post(`/orgs/${orgId}/email-settings/test/`);
             return { success: true, message: response.data.detail || 'Connection successful' };
-        } catch (err: any) {
-            return { success: false, message: err.response?.data?.detail || 'Connection failed' };
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>;
+            return { success: false, message: axiosError.response?.data?.detail || 'Connection failed' };
         }
     }
 }));

@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import api from "@/lib/api";
+import { AxiosError } from "axios";
 import { useAuthStore } from "./auth";
 
 import { Objective, KeyResult, Notification, AuditLog } from "@/types";
@@ -59,7 +60,8 @@ export const useOKRStore = create<OKRState>((set, get) => ({
             const { data } = await api.get(`/orgs/${activeOrgId}/dashboard/`);
             set({ dashboardData: data });
         } catch (err) {
-            console.error("Failed to fetch dashboard data", err);
+            const axiosError = err as AxiosError<{ detail: string }>;
+            console.error("Failed to fetch dashboard data", axiosError.response?.data?.detail || axiosError.message);
         }
     },
 
@@ -70,7 +72,8 @@ export const useOKRStore = create<OKRState>((set, get) => ({
             const { data } = await api.get(`/orgs/${activeOrgId}/audit-logs/`);
             set({ auditLogs: data });
         } catch (err) {
-            console.error("Failed to fetch audit logs", err);
+            const axiosError = err as AxiosError<{ detail: string }>;
+            console.error("Failed to fetch audit logs", axiosError.response?.data?.detail || axiosError.message);
         }
     },
 
@@ -100,7 +103,8 @@ export const useOKRStore = create<OKRState>((set, get) => ({
                 decisions: decRes.data
             });
         } catch (err) {
-            console.error("Failed to fetch item details", err);
+            const axiosError = err as AxiosError<{ detail: string }>;
+            console.error("Failed to fetch item details", axiosError.response?.data?.detail || axiosError.message);
         }
     },
 
@@ -112,9 +116,10 @@ export const useOKRStore = create<OKRState>((set, get) => ({
         try {
             const response = await api.get(`/orgs/${activeOrgId}/objectives/`);
             set({ objectives: response.data, isLoading: false });
-        } catch (err: any) {
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>;
             set({
-                error: err.response?.data?.detail || "Failed to fetch OKRs",
+                error: axiosError.response?.data?.detail || "Failed to fetch OKRs",
                 isLoading: false
             });
         }
@@ -127,8 +132,9 @@ export const useOKRStore = create<OKRState>((set, get) => ({
         try {
             await api.patch(`/orgs/${activeOrgId}/key-results/${krId}/`, data);
             await get().fetchOKRs(); // Reload to get consistent state
-        } catch (err: any) {
-            set({ error: err.response?.data?.detail || "Failed to update KR" });
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>;
+            set({ error: axiosError.response?.data?.detail || "Failed to update KR" });
         }
     },
 
@@ -139,8 +145,9 @@ export const useOKRStore = create<OKRState>((set, get) => ({
         try {
             await api.patch(`/orgs/${activeOrgId}/objectives/${objId}/`, data);
             await get().fetchOKRs();
-        } catch (err: any) {
-            set({ error: err.response?.data?.detail || "Failed to update Objective" });
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>;
+            set({ error: axiosError.response?.data?.detail || "Failed to update Objective" });
         }
     },
 
@@ -151,9 +158,10 @@ export const useOKRStore = create<OKRState>((set, get) => ({
         try {
             await api.post(`/orgs/${activeOrgId}/objectives/`, data);
             await get().fetchOKRs();
-        } catch (err: any) {
-            set({ error: err.response?.data?.detail || "Failed to create Objective" });
-            throw err;
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>;
+            set({ error: axiosError.response?.data?.detail || "Failed to create Objective" });
+            throw axiosError;
         }
     },
 
@@ -164,8 +172,9 @@ export const useOKRStore = create<OKRState>((set, get) => ({
         try {
             await api.delete(`/orgs/${activeOrgId}/objectives/${objId}/`);
             await get().fetchOKRs();
-        } catch (err: any) {
-            set({ error: err.response?.data?.detail || "Failed to delete Objective" });
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>;
+            set({ error: axiosError.response?.data?.detail || "Failed to delete Objective" });
         }
     },
 
@@ -176,9 +185,10 @@ export const useOKRStore = create<OKRState>((set, get) => ({
         try {
             await api.post(`/orgs/${activeOrgId}/key-results/`, data);
             await get().fetchOKRs();
-        } catch (err: any) {
-            set({ error: err.response?.data?.detail || "Failed to create KR" });
-            throw err;
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>;
+            set({ error: axiosError.response?.data?.detail || "Failed to create KR" });
+            throw axiosError;
         }
     },
 
@@ -189,8 +199,9 @@ export const useOKRStore = create<OKRState>((set, get) => ({
         try {
             await api.delete(`/orgs/${activeOrgId}/key-results/${krId}/`);
             await get().fetchOKRs();
-        } catch (err: any) {
-            set({ error: err.response?.data?.detail || "Failed to delete KR" });
+        } catch (err) {
+            const axiosError = err as AxiosError<{ detail: string }>;
+            set({ error: axiosError.response?.data?.detail || "Failed to delete KR" });
         }
     },
 }));

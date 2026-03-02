@@ -10,7 +10,7 @@ export function middleware(request: NextRequest) {
     // In a real application, we'd check for a session cookie here.
     // Since we're using localStorage for the token currently (via zustand),
     // we'd need to sync it to a cookie for the middleware to see it.
-    const token = request.cookies.get('trackr-token')?.value;
+    const token = request.cookies.get('argos-token')?.value;
 
     if (isPublicPath && token) {
         return NextResponse.redirect(new URL('/dashboard', request.url));
