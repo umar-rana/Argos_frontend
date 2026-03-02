@@ -1,3 +1,5 @@
+"use client";
+
 import { OKRGrid } from "@/components/okr/OKRGrid";
 import { Plus, Filter, Download } from "lucide-react";
 import { useAuthStore } from "@/store/auth";

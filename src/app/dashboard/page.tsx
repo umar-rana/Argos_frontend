@@ -11,41 +11,33 @@ import { useEffect } from "react";
 import { useNotificationStore } from "@/store/notifications";
 
 export default function DashboardPage() {
-    const { objectives, auditLogs, fetchOKRs, fetchAuditLogs } = useOKRStore();
+    const { objectives, auditLogs, dashboardData, fetchOKRs, fetchAuditLogs, fetchDashboardData } = useOKRStore();
     const { fetchNotifications } = useNotificationStore();
 
     useEffect(() => {
         fetchOKRs();
         fetchAuditLogs();
         fetchNotifications();
-    }, [fetchOKRs, fetchAuditLogs, fetchNotifications]);
+        fetchDashboardData();
+    }, [fetchOKRs, fetchAuditLogs, fetchNotifications, fetchDashboardData]);
 
-    // Calculate stats
-    const totalObjectives = objectives.length;
-    const totalKRs = objectives.reduce((acc, obj) => acc + (obj.key_results?.length || 0), 0);
-
-    const ragStats = {
-        green: 0,
-        amber: 0,
-        red: 0
+    // Use live dashboard data if available, otherwise fallback to calculated/mocks
+    const stats = dashboardData?.stats || {
+        total_objectives: objectives.length,
+        total_krs: objectives.reduce((acc, obj) => acc + (obj.key_results?.length || 0), 0),
+        active_teams: 0,
+        completion_rate: 0
     };
 
-    objectives.forEach(obj => {
-        obj.key_results?.forEach(kr => {
-            const status = kr.rag_status as keyof typeof ragStats;
-            if (ragStats[status] !== undefined) ragStats[status]++;
-        });
-    });
-
-    const pieData = [
-        { name: 'On Track', value: ragStats.green, color: '#10B981' },
-        { name: 'At Risk', value: ragStats.amber, color: '#F59E0B' },
-        { name: 'Off Track', value: ragStats.red, color: '#EF4444' },
+    const pieData = dashboardData?.health_distribution || [
+        { name: 'On Track', value: 0, color: '#10B981' },
+        { name: 'At Risk', value: 0, color: '#F59E0B' },
+        { name: 'Off Track', value: 0, color: '#EF4444' },
     ];
 
-    const barData = objectives.slice(0, 5).map(obj => ({
+    const barData = dashboardData?.top_objectives || objectives.slice(0, 5).map(obj => ({
         name: obj.title.length > 20 ? obj.title.substring(0, 20) + '...' : obj.title,
-        progress: obj.key_results?.reduce((acc, kr) => acc + (kr.current_value / kr.target_value), 0) / (obj.key_results?.length || 1) * 100
+        progress: 0
     }));
 
     return (
@@ -61,10 +53,10 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <StatCard title="Total Objectives" value={totalObjectives} icon={<Target className="text-blue-500" />} />
-                <StatCard title="Total Key Results" value={totalKRs} icon={<TrendingUp className="text-green-500" />} />
-                <StatCard title="At Risk KRs" value={ragStats.amber} icon={<AlertTriangle className="text-amber-500" />} />
-                <StatCard title="Off Track KRs" value={ragStats.red} icon={<AlertTriangle className="text-red-500" />} />
+                <StatCard title="Total Objectives" value={stats.total_objectives} icon={<Target className="text-blue-500" />} />
+                <StatCard title="Total Key Results" value={stats.total_krs} icon={<TrendingUp className="text-green-500" />} />
+                <StatCard title="Active Teams" value={stats.active_teams} icon={<LayoutDashboard className="text-amber-500" />} />
+                <StatCard title="Completion Rate %" value={stats.completion_rate} icon={<TrendingUp className="text-primary" />} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

@@ -13,6 +13,17 @@ interface OKRState {
     risks: any[];
     accomplishments: any[];
     auditLogs: AuditLog[];
+    dashboardData: {
+        stats: {
+            total_objectives: number;
+            total_krs: number;
+            active_teams: number;
+            completion_rate: number;
+        };
+        health_distribution: { name: string, value: number, color: string }[];
+        top_objectives: { name: string, progress: number, status: string }[];
+        recent_activity: any[];
+    } | null;
     isLoading: boolean;
     error: string | null;
     fetchOKRs: () => Promise<void>;
@@ -21,6 +32,7 @@ interface OKRState {
     setSelectedItem: (item: { type: 'objective' | 'kr', id: string } | null) => void;
     fetchItemDetails: (type: 'objective' | 'kr', id: string) => Promise<void>;
     fetchAuditLogs: () => Promise<void>;
+    fetchDashboardData: () => Promise<void>;
 }
 
 export const useOKRStore = create<OKRState>((set, get) => ({
@@ -30,8 +42,20 @@ export const useOKRStore = create<OKRState>((set, get) => ({
     risks: [],
     accomplishments: [],
     auditLogs: [],
+    dashboardData: null,
     isLoading: false,
     error: null,
+
+    fetchDashboardData: async () => {
+        const activeOrgId = useAuthStore.getState().activeOrgId;
+        if (!activeOrgId) return;
+        try {
+            const { data } = await api.get(`/orgs/${activeOrgId}/dashboard/`);
+            set({ dashboardData: data });
+        } catch (err) {
+            console.error("Failed to fetch dashboard data", err);
+        }
+    },
 
     fetchAuditLogs: async () => {
         const activeOrgId = useAuthStore.getState().activeOrgId;
